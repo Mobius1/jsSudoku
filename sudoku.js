@@ -7,6 +7,39 @@
 (function(global) {
 	"use strict";
 
+	// Helper utilities
+	var util = {
+		extend: function(src, props) {
+			props = props || {};
+			var p;
+			for (p in src) {
+				if (!props.hasOwnProperty(p)) {
+					props[p] = src[p];
+				}
+			}
+			return props;
+		},
+		each: function(a, b, c) {
+			if ("[object Object]" === Object.prototype.toString.call(a)) {
+				for (var d in a) {
+					if (Object.prototype.hasOwnProperty.call(a, d)) {
+						b.call(c, d, a[d], a);
+					}
+				}
+			} else {
+				for (var e = 0, f = a.length; e < f; e++) {
+					b.call(c, e, a[e], a);
+				}
+			}
+		},
+		isNumber: function(n) {
+			return !isNaN(parseFloat(n)) && isFinite(n);
+		},
+		includes: function(a, b) {
+			return a.indexOf(b) > -1;
+		},
+	};
+
 	/**
 	 * Default configuration options. These can be overriden
 	 * when loading a game instance.
@@ -32,7 +65,6 @@
 		this.config = config;
 
 		// Initialize game parameters
-		this.recursionCounter = 0;
 		this.cellMatrix = {};
 		this.matrix = {};
 		this.validation = {};
@@ -55,31 +87,29 @@
 		buildGUI: function() {
 			var td, tr;
 
-			this.table = util.createElement("table", {
-				class: "sudoku-container"
-			});
+			this.table = document.createElement("table");
+			this.table.classList.add("sudoku-container");
 
 			for (var i = 0; i < 9; i++) {
-				tr = util.createElement("tr");
+				tr = document.createElement("tr");
 				this.cellMatrix[i] = {};
 
 				for (var j = 0; j < 9; j++) {
 					// Build the input
-					this.cellMatrix[i][j] = util.createElement("input", {
-						maxlength: 1
-					});
+					this.cellMatrix[i][j] = document.createElement("input");
+					this.cellMatrix[i][j].maxlength = 1;
 
 					this.cellMatrix[i][j].row = i;
 					this.cellMatrix[i][j].col = j;
 
-					util.on(this.cellMatrix[i][j], "focus", function(e) {
+					this.cellMatrix[i][j].addEventListener("focus", function(e) {
 						if (this.classList.contains("disabled")) {
 							this.blur();
 						}
 					});
-					util.on(this.cellMatrix[i][j], "keyup", this.onKeyUp.bind(this));
+					this.cellMatrix[i][j].addEventListener("keyup", this.onKeyUp.bind(this));
 
-					td = util.createElement("td");
+					td = document.createElement("td");
 
 					td.appendChild(this.cellMatrix[i][j]);
 
@@ -88,9 +118,9 @@
 					var sectIDj = Math.floor(j / 3);
 					// Set the design for different sections
 					if ((sectIDi + sectIDj) % 2 === 0) {
-						util.addClass(td, "sudoku-section-one");
+						td.classList.add("sudoku-section-one");
 					} else {
-						util.addClass(td, "sudoku-section-two");
+						td.classList.add("sudoku-section-two");
 					}
 					// Build the row
 					tr.appendChild(td);
@@ -119,6 +149,10 @@
 				val = input.value.trim(),
 				row = input.row,
 				col = input.col;
+
+			if (!util.isNumber(val)) {
+				//
+			}
 
 			// Reset board validation class
 			this.table.classList.remove("valid-matrix");
@@ -236,8 +270,6 @@
 			if (num !== "") {
 				// Validate value
 				if (
-					// Make sure value is numeric
-					util.isInt(num) &&
 					// Make sure value is within range
 					Number(num) > 0 &&
 					Number(num) <= 9
@@ -307,7 +339,6 @@
 				secIndex,
 				gameResult;
 
-			this.recursionCounter++;
 			nextSquare = this.findClosestEmptySquare(row, col);
 			if (!nextSquare) {
 				// End of board
@@ -338,7 +369,7 @@
 						return true;
 					} else {
 						// There was a problem, we should backtrack
-						this.backtrackCounter++;
+
 
 						// Remove value from input
 						this.cellMatrix[sqRow][sqCol].value = "";
@@ -526,8 +557,14 @@
 		start: function() {
 			var arr = [],
 				x = 0,
-				values, rows = this.game.matrix.row,
-				inputs = this.game.table.getElementsByTagName("input");
+				values,
+				rows = this.game.matrix.row,
+				inputs = this.game.table.getElementsByTagName("input"),
+				difficulties = {
+					"easy": 50,
+					"normal": 40,
+					"hard": 30,
+				};
 
 			// Solve the game to get the solution
 			this.game.solveGame(0, 0);
@@ -541,12 +578,6 @@
 					x++;
 				});
 			});
-
-			var difficulties = {
-				"easy": 50,
-				"normal": 40,
-				"hard": 30,
-			};
 
 			// Get random values for the start of the game
 			values = getUnique(arr, difficulties[this.game.config.difficulty]);
@@ -585,26 +616,18 @@
 		 * board.
 		 */
 		solve: function() {
-			var isValid, starttime, endtime, elapsed;
+			var isValid;
 			// Make sure the board is valid first
 			if (!this.game.validateMatrix()) {
 				return false;
 			}
-			// Reset counters
-			this.game.recursionCounter = 0;
-			this.game.backtrackCounter = 0;
-
-			// Check start time
-			starttime = Date.now();
 
 			// Solve the game
 			isValid = this.game.solveGame(0, 0);
 
-			// Get solving end time
-			endtime = Date.now();
-
 			// Visual indication of whether the game was solved
 			this.game.table.classList.toggle("valid-matrix", isValid);
+
 			if (isValid) {
 				var inputs = this.game.table.getElementsByTagName("input");
 
@@ -616,4 +639,5 @@
 	};
 
 	global.Sudoku = Sudoku;
+	
 })(this);
