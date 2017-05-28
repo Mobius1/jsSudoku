@@ -1,54 +1,88 @@
 body {
-	margin: 0;
-	padding: 0;
-}
-
-button, h1 {
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-
-.sudoku-menu {
-	width: 50%;
-	text-align: center;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.sudoku-menu button {
-	font-size: 24px;
-	margin: 10px;
-	padding: 5px;
+  width: 100vw;
+  height: 100vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -ms-flex-flow: column;
+      flex-flow: column;
+  margin: 0;
+  overflow: hidden;
+  font-family: "Lato", sans-serif;
+  background-color: #34495e;
 }
 
 .sudoku-container {
-	border: 5px solid #666;
-	margin-left: auto;
-	margin-right: auto;
+  border: 4px solid #233140;
+  margin: 0 auto;
+  position: relative;
+  padding: 0 2px;
 }
 
-.sudoku-container td {
-	margin: 0;
+.sudoku-container::before, .sudoku-container::after {
+  position: absolute;
+  border-style: solid;
+  pointer-events: none;
+  content: "";
 }
+
+.sudoku-container::before {
+  width: 156px;
+  border-width: 0 4px;
+  border-color: transparent #233140 transparent #233140;
+  top: 4px;
+  left: 160px;
+  bottom: 4px;
+}
+
+.sudoku-container::after {
+  height: 156px;
+  border-width: 4px 0;
+  border-color: #233140 transparent #233140 transparent;
+  left: 4px;
+  top: 160px;
+  right: 4px;
+}
+
+tr:nth-child(1) td:nth-child(3) input,
+tr:nth-child(1) td:nth-child(6) input {
+  margin: 0 10px 0 0;
+}
+
+tr:nth-child(3) input,
+tr:nth-child(6) input {
+  margin: 0 0 10px 0;
+}
+
 .sudoku-container input {
-	width: 40px;
-	height: 40px;
-	text-align: center;
-	font-size: 20px;
-	padding: 0;
-	border: 1px #ccc solid;
-	background: transparent;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 20px;
+  padding: 0;
+  border: 3px #2c3e50 solid;
+  background-color: #2c3e50;
+  color: #eee;
 }
 
-.sudoku-container .sudoku-input-error {
-	background: #ffc9d7;
+.sudoku-container input:focus {
+  border-color: #3498db;
 }
+
+.sudoku-container .invalid {
+  border-color: #e74c3c;
+}
+
+.sudoku-container .invalid:focus {
+  border-color: #e74c3c;
+}
+
 .sudoku-container.valid-matrix {
-	border: 5px solid #7edb37;
-}
-
-
-.sudoku-section-one {
-	background: #ccc;
+  border-color: #2ecc71;
 }
