@@ -108,7 +108,6 @@
 					this.cellMatrix[i][j].row = i;
 					this.cellMatrix[i][j].col = j;
 
-					this.cellMatrix[i][j].addEventListener("focus", this.onBlur.bind(this));
 					this.cellMatrix[i][j].addEventListener("keyup", this.onKeyUp.bind(this));
 
 					td = document.createElement("td");
@@ -130,6 +129,8 @@
 				// Append to table
 				this.table.appendChild(tr);
 			}
+			
+			this.table.addEventListener("mousedown", this.onMouseDown.bind(this));
 
 			// Return the GUI table
 			return this.table;
@@ -178,28 +179,12 @@
 			this.matrix.col[col][row] = val;
 			this.matrix.sect[sectRow][sectCol][secIndex] = val;
 		},
-
-		/**
-		 * Handle blur events.
-		 *
-		 * @param {Event} e Blur event
-		 */
-		onBlur: function(e) {
-			var input = e.currentTarget,
-				nextCell = input.parentNode.nextElementSibling,
-				firstRow = this.table.rows[0],
-				nextRow = input.parentNode.parentNode.nextElementSibling;
-
-			if (input.classList.contains("disabled")) {
-				input.blur();
-
-				if (nextCell) {
-					nextCell.firstElementChild.focus();
-				} else if (nextRow) {
-					nextRow.cells[0].firstElementChild.focus();
-				} else {
-					firstRow.cells[0].firstElementChild.focus();
-				}
+		
+		onMouseDown: function(e) {
+			var t = e.target;
+			
+			if ( t.nodeName === "INPUT" && t.classList.contains("disabled") ) {
+				e.preventDefault();
 			}
 		},
 
@@ -219,6 +204,7 @@
 
 			util.each(inputs, function(i, input) {
 				input.classList.remove("disabled");
+				input.tabIndex = 1;
 			});
 
 			this.table.classList.remove("valid-matrix");
@@ -617,6 +603,7 @@
 				var input = inputs[data.index];
 				input.value = data.value;
 				input.classList.add("disabled");
+				input.tabIndex = -1;
 				triggerEvent(input, 'keyup');
 			});
 		},
@@ -661,10 +648,12 @@
 
 				util.each(inputs, function(i, input) {
 					input.classList.add("disabled");
+					input.tabIndex = -1;
 				});
 			}
 		}
 	};
 
 	global.Sudoku = Sudoku;
+	
 })(this);
