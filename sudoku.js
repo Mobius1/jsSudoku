@@ -3,6 +3,12 @@
  * backtracking algorithm solver.
  *
  * @authors Moriel Schottlender, Mobius1
+ *
+ *
+ *
+ * var sudoku = new Sudoku(".container");
+ *
+ * sudoku.start();
  */
 (function(global) {
 	"use strict";
@@ -97,16 +103,12 @@
 				for (var j = 0; j < 9; j++) {
 					// Build the input
 					this.cellMatrix[i][j] = document.createElement("input");
-					this.cellMatrix[i][j].maxlength = 1;
+					this.cellMatrix[i][j].maxLength = 1;
 
 					this.cellMatrix[i][j].row = i;
 					this.cellMatrix[i][j].col = j;
 
-					this.cellMatrix[i][j].addEventListener("focus", function(e) {
-						if (this.classList.contains("disabled")) {
-							this.blur();
-						}
-					});
+					this.cellMatrix[i][j].addEventListener("focus", this.onBlur.bind(this));
 					this.cellMatrix[i][j].addEventListener("keyup", this.onKeyUp.bind(this));
 
 					td = document.createElement("td");
@@ -128,6 +130,7 @@
 				// Append to table
 				this.table.appendChild(tr);
 			}
+
 			// Return the GUI table
 			return this.table;
 		},
@@ -135,27 +138,28 @@
 		/**
 		 * Handle keyup events.
 		 *
-		 * @param {jQuery.event} e Keyup event
+		 * @param {Event} e Keyup event
 		 */
 		onKeyUp: function(e) {
 			var sectRow,
 				sectCol,
 				secIndex,
-				starttime,
-				endtime,
-				elapsed,
+				val, row, col,
 				isValid = true,
-				input = e.currentTarget,
-				val = input.value.trim(),
-				row = input.row,
-				col = input.col;
+				input = e.currentTarget
 
-			if (!util.isNumber(val)) {
-				//
-			}
+			val = input.value.trim();
+			row = input.row;
+			col = input.col;
 
 			// Reset board validation class
 			this.table.classList.remove("valid-matrix");
+			input.classList.remove("invalid");
+
+			if (!util.isNumber(val)) {
+				input.value = "";
+				return false;
+			}
 
 			// Validate, but only if validate_on_insert is set to true
 			if (this.config.validate_on_insert) {
@@ -173,6 +177,30 @@
 			this.matrix.row[row][col] = val;
 			this.matrix.col[col][row] = val;
 			this.matrix.sect[sectRow][sectCol][secIndex] = val;
+		},
+
+		/**
+		 * Handle blur events.
+		 *
+		 * @param {Event} e Blur event
+		 */
+		onBlur: function(e) {
+			var input = e.currentTarget,
+				nextCell = input.parentNode.nextElementSibling,
+				firstRow = this.table.rows[0],
+				nextRow = input.parentNode.parentNode.nextElementSibling;
+
+			if (input.classList.contains("disabled")) {
+				input.blur();
+
+				if (nextCell) {
+					nextCell.firstElementChild.focus();
+				} else if (nextRow) {
+					nextRow.cells[0].firstElementChild.focus();
+				} else {
+					firstRow.cells[0].firstElementChild.focus();
+				}
+			}
 		},
 
 		/**
@@ -639,5 +667,4 @@
 	};
 
 	global.Sudoku = Sudoku;
-	
 })(this);
